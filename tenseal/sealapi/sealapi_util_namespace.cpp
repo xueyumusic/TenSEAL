@@ -8,10 +8,11 @@
 #include <seal/util/croots.h>
 #include <seal/util/hash.h>
 #include <seal/util/hestdparms.h>
+#include <seal/util/iterator.h>
 #include <seal/util/numth.h>
 #include <seal/util/pointer.h>
-#include <seal/util/polyarith.h>
-#include <seal/util/polyarithmod.h>
+//#include <seal/util/polyarith.h>
+//#include <seal/util/polyarithmod.h>
 #include <seal/util/polyarithsmallmod.h>
 #include <seal/util/rlwe.h>
 #include <seal/util/scalingvariant.h>
@@ -139,7 +140,9 @@ void bind_util_namespace(pybind11::module &m) {
              [](const BaseConverter &obj, const std::vector<std::uint64_t> &in,
                 std::size_t count) {
                  std::vector<std::uint64_t> out(obj.obase_size() * count);
-                 obj.fast_convert_array(in.data(), count, out.data(),
+               //   obj.fast_convert_array(in.data(), count, out.data(),
+               //                          MemoryManager::GetPool());
+                 obj.fast_convert_array(ConstRNSIter(in.data(), count), RNSIter(out.data(), count),
                                         MemoryManager::GetPool());
 
                  return out;
@@ -152,45 +155,45 @@ void bind_util_namespace(pybind11::module &m) {
              py::arg(), py::arg(), py::arg(),
              py::arg() = MemoryManager::GetPool())
         .def("divide_and_round_q_last_inplace",
-             [](const RNSTool &obj, std::uint64_t *input) {
-                 obj.divide_and_round_q_last_inplace(input,
+             [](const RNSTool &obj, std::uint64_t *input, std::size_t count) {
+                 obj.divide_and_round_q_last_inplace(RNSIter(input, count),
                                                      MemoryManager::GetPool());
              })
         .def("divide_and_round_q_last_ntt_inplace",
-             [](const RNSTool &obj, std::uint64_t *input,
+             [](const RNSTool &obj, std::uint64_t *input, std::size_t count,
                 const NTTTables *rns_ntt_tables) {
                  obj.divide_and_round_q_last_ntt_inplace(
-                     input, rns_ntt_tables, MemoryManager::GetPool());
+                     RNSIter(input, count), rns_ntt_tables, MemoryManager::GetPool());
              })
         .def("fastbconv_sk",
-             [](const RNSTool &obj, const std::uint64_t *input,
+             [](const RNSTool &obj, const std::uint64_t *input, std::size_t count,
                 std::uint64_t *destination) {
-                 obj.fastbconv_sk(input, destination, MemoryManager::GetPool());
+                 obj.fastbconv_sk(ConstRNSIter(input, count), RNSIter(destination, count), MemoryManager::GetPool());
              })
         .def("sm_mrq",
-             [](const RNSTool &obj, const std::uint64_t *input,
+             [](const RNSTool &obj, const std::uint64_t *input, std::size_t count,
                 std::uint64_t *destination) {
-                 obj.sm_mrq(input, destination, MemoryManager::GetPool());
+                 obj.sm_mrq(ConstRNSIter(input, count), RNSIter(destination, count), MemoryManager::GetPool());
              })
         .def("fast_floor",
-             [](const RNSTool &obj, const std::uint64_t *input,
+             [](const RNSTool &obj, const std::uint64_t *input, std::size_t count,
                 std::uint64_t *destination) {
-                 obj.fast_floor(input, destination, MemoryManager::GetPool());
+                 obj.fast_floor(ConstRNSIter(input, count), RNSIter(destination, count), MemoryManager::GetPool());
              })
         .def("fastbconv_m_tilde",
-             [](const RNSTool &obj, const std::uint64_t *input,
+             [](const RNSTool &obj, const std::uint64_t *input, std::size_t count,
                 std::uint64_t *destination) {
-                 obj.fastbconv_m_tilde(input, destination,
+                 obj.fastbconv_m_tilde(ConstRNSIter(input, count), RNSIter(destination, count),
                                        MemoryManager::GetPool());
              })
         .def("decrypt_scale_and_round",
-             [](const RNSTool &obj, const std::uint64_t *input,
+             [](const RNSTool &obj, const std::uint64_t *input, std::size_t count,
                 std::uint64_t *destination) {
-                 obj.decrypt_scale_and_round(input, destination,
+                 obj.decrypt_scale_and_round(ConstRNSIter(input, count), destination,
                                              MemoryManager::GetPool());
              })
         .def("inv_q_last_mod_q", &RNSTool::inv_q_last_mod_q)
-        .def("base_Bsk_small_ntt_tables", &RNSTool::base_Bsk_small_ntt_tables)
+        .def("base_Bsk_ntt_tables", &RNSTool::base_Bsk_ntt_tables)
         .def("base_q", &RNSTool::base_q)
         .def("base_B", &RNSTool::base_B)
         .def("base_Bsk", &RNSTool::base_Bsk)
@@ -214,12 +217,12 @@ void bind_util_namespace(pybind11::module &m) {
              py::arg(), py::arg() = MemoryManager::GetPool())
         .def("get_root", &NTTTables::get_root)
         .def("get_from_root_powers", &NTTTables::get_from_root_powers)
-        .def("get_from_scaled_root_powers",
-             &NTTTables::get_from_scaled_root_powers)
+     //    .def("get_from_scaled_root_powers",
+     //         &NTTTables::get_from_scaled_root_powers)
         .def("get_from_inv_root_powers", &NTTTables::get_from_inv_root_powers)
-        .def("get_from_scaled_inv_root_powers",
-             &NTTTables::get_from_scaled_inv_root_powers)
-        .def("get_inv_degree_modulo", &NTTTables::get_inv_degree_modulo)
+     //    .def("get_from_scaled_inv_root_powers",
+     //         &NTTTables::get_from_scaled_inv_root_powers)
+     //    .def("get_inv_degree_modulo", &NTTTables::get_inv_degree_modulo)
         .def("modulus", &NTTTables::modulus)
         .def("coeff_count_power", &NTTTables::coeff_count_power)
         .def("coeff_count", &NTTTables::coeff_count);
@@ -287,7 +290,6 @@ void bind_util_namespace(pybind11::module &m) {
 
     /*******************
      * "util/polyarith.h" {
-     ***/
     m.def("right_shift_poly_coeffs",
           [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
              std::size_t uint64_cnt, int shift) {
@@ -381,6 +383,7 @@ void bind_util_namespace(pybind11::module &m) {
                               MemoryManager::GetPool());
             return out;
         });
+     ***/
     /***
      * } "util/polyarith.h"
      *******************/
@@ -429,14 +432,14 @@ void bind_util_namespace(pybind11::module &m) {
               modulo_poly_coeffs(poly.data(), coeff_count, modulus, out.data());
               return out;
           })
-        .def("modulo_poly_coeffs_63",
-             [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
-                const Modulus &modulus) {
-                 std::vector<uint64_t> out(coeff_count);
-                 modulo_poly_coeffs_63(poly.data(), coeff_count, modulus,
-                                       out.data());
-                 return out;
-             })
+     //    .def("modulo_poly_coeffs_63",
+     //         [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
+     //            const Modulus &modulus) {
+     //             std::vector<uint64_t> out(coeff_count);
+     //             modulo_poly_coeffs_63(poly.data(), coeff_count, modulus,
+     //                                   out.data());
+     //             return out;
+     //         })
         .def("negate_poly_coeffmod",
              [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
                 const Modulus &modulus) {
@@ -445,24 +448,25 @@ void bind_util_namespace(pybind11::module &m) {
                                       out.data());
                  return out;
              })
-        .def("add_poly_poly_coeffmod",
+        .def("add_poly_coeffmod",
              [](const std::vector<uint64_t> &operand1,
                 const std::vector<uint64_t> &operand2, std::size_t coeff_count,
                 const Modulus &modulus) {
                  std::vector<uint64_t> out(coeff_count);
-                 add_poly_poly_coeffmod(operand1.data(), operand2.data(),
+                 add_poly_coeffmod(operand1.data(), operand2.data(),
                                         coeff_count, modulus, out.data());
                  return out;
              })
-        .def("sub_poly_poly_coeffmod",
+        .def("sub_poly_coeffmod",
              [](const std::vector<uint64_t> &operand1,
                 const std::vector<uint64_t> &operand2, std::size_t coeff_count,
                 const Modulus &modulus) {
                  std::vector<uint64_t> out(coeff_count);
-                 sub_poly_poly_coeffmod(operand1.data(), operand2.data(),
+                 sub_poly_coeffmod(operand1.data(), operand2.data(),
                                         coeff_count, modulus, out.data());
                  return out;
              })
+     //TODO: add_poly_scalar_coeffmod
         .def("multiply_poly_scalar_coeffmod",
              [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
                 std::uint64_t scalar, const Modulus &modulus) {
@@ -471,51 +475,51 @@ void bind_util_namespace(pybind11::module &m) {
                                                modulus, out.data());
                  return out;
              })
-        .def("multiply_poly_poly_coeffmod",
-             [](const std::vector<std::uint64_t> &operand1,
-                std::size_t operand1_coeff_count,
-                const std::vector<std::uint64_t> &operand2,
-                std::size_t operand2_coeff_count, const Modulus &modulus,
-                std::size_t result_coeff_count) {
-                 std::vector<uint64_t> out(result_coeff_count);
-                 multiply_poly_poly_coeffmod(
-                     operand1.data(), operand1_coeff_count, operand2.data(),
-                     operand2_coeff_count, modulus, result_coeff_count,
-                     out.data());
-                 return out;
-             })
-        .def("multiply_poly_poly_coeffmod",
-             [](const std::vector<std::uint64_t> &operand1,
-                const std::vector<std::uint64_t> &operand2,
-                std::size_t coeff_count, const Modulus &modulus,
-                std::size_t result_coeff_count) {
-                 std::vector<uint64_t> out(coeff_count * coeff_count);
-                 multiply_poly_poly_coeffmod(operand1.data(), operand2.data(),
-                                             coeff_count, modulus, out.data());
-                 return out;
-             })
-        .def("multiply_truncate_poly_poly_coeffmod",
-             [](const std::vector<std::uint64_t> &operand1,
-                const std::vector<std::uint64_t> &operand2,
-                std::size_t coeff_count, const Modulus &modulus,
-                std::size_t result_coeff_count) {
-                 std::vector<uint64_t> out(coeff_count * coeff_count);
-                 multiply_truncate_poly_poly_coeffmod(
-                     operand1.data(), operand2.data(), coeff_count, modulus,
-                     out.data());
-                 return out;
-             })
-        .def("divide_poly_poly_coeffmod",
-             [](const std::vector<std::uint64_t> &operand1,
-                const std::vector<std::uint64_t> &operand2,
-                std::size_t coeff_count, const Modulus &modulus) {
-                 std::vector<uint64_t> q(coeff_count);
-                 std::vector<uint64_t> r(coeff_count);
-                 divide_poly_poly_coeffmod(operand1.data(), operand2.data(),
-                                           coeff_count, modulus, q.data(),
-                                           r.data());
-                 return std::vector<std::vector<uint64_t>>{q, r};
-             })
+     //    .def("multiply_poly_poly_coeffmod",
+     //         [](const std::vector<std::uint64_t> &operand1,
+     //            std::size_t operand1_coeff_count,
+     //            const std::vector<std::uint64_t> &operand2,
+     //            std::size_t operand2_coeff_count, const Modulus &modulus,
+     //            std::size_t result_coeff_count) {
+     //             std::vector<uint64_t> out(result_coeff_count);
+     //             multiply_poly_poly_coeffmod(
+     //                 operand1.data(), operand1_coeff_count, operand2.data(),
+     //                 operand2_coeff_count, modulus, result_coeff_count,
+     //                 out.data());
+     //             return out;
+     //         })
+     //    .def("multiply_poly_poly_coeffmod",
+     //         [](const std::vector<std::uint64_t> &operand1,
+     //            const std::vector<std::uint64_t> &operand2,
+     //            std::size_t coeff_count, const Modulus &modulus,
+     //            std::size_t result_coeff_count) {
+     //             std::vector<uint64_t> out(coeff_count * coeff_count);
+     //             multiply_poly_poly_coeffmod(operand1.data(), operand2.data(),
+     //                                         coeff_count, modulus, out.data());
+     //             return out;
+     //         })
+     //    .def("multiply_truncate_poly_poly_coeffmod",
+     //         [](const std::vector<std::uint64_t> &operand1,
+     //            const std::vector<std::uint64_t> &operand2,
+     //            std::size_t coeff_count, const Modulus &modulus,
+     //            std::size_t result_coeff_count) {
+     //             std::vector<uint64_t> out(coeff_count * coeff_count);
+     //             multiply_truncate_poly_poly_coeffmod(
+     //                 operand1.data(), operand2.data(), coeff_count, modulus,
+     //                 out.data());
+     //             return out;
+     //         })
+     //    .def("divide_poly_poly_coeffmod",
+     //         [](const std::vector<std::uint64_t> &operand1,
+     //            const std::vector<std::uint64_t> &operand2,
+     //            std::size_t coeff_count, const Modulus &modulus) {
+     //             std::vector<uint64_t> q(coeff_count);
+     //             std::vector<uint64_t> r(coeff_count);
+     //             divide_poly_poly_coeffmod(operand1.data(), operand2.data(),
+     //                                       coeff_count, modulus, q.data(),
+     //                                       r.data());
+     //             return std::vector<std::vector<uint64_t>>{q, r};
+     //         })
         .def("dyadic_product_coeffmod",
              [](const std::vector<std::uint64_t> &operand1,
                 const std::vector<std::uint64_t> &operand2,
@@ -532,16 +536,16 @@ void bind_util_namespace(pybind11::module &m) {
                  return poly_infty_norm_coeffmod(poly.data(), coeff_count,
                                                  modulus);
              })
-        .def("try_invert_poly_coeffmod",
-             [](const std::vector<uint64_t> &poly,
-                const std::vector<uint64_t> &poly_modulus,
-                std::size_t coeff_count, const Modulus &modulus) {
-                 std::vector<uint64_t> out(coeff_count);
-                 try_invert_poly_coeffmod(poly.data(), poly_modulus.data(),
-                                          coeff_count, modulus, out.data(),
-                                          MemoryManager::GetPool());
-                 return out;
-             })
+     //    .def("try_invert_poly_coeffmod",
+     //         [](const std::vector<uint64_t> &poly,
+     //            const std::vector<uint64_t> &poly_modulus,
+     //            std::size_t coeff_count, const Modulus &modulus) {
+     //             std::vector<uint64_t> out(coeff_count);
+     //             try_invert_poly_coeffmod(poly.data(), poly_modulus.data(),
+     //                                      coeff_count, modulus, out.data(),
+     //                                      MemoryManager::GetPool());
+     //             return out;
+     //         })
         .def("negacyclic_shift_poly_coeffmod",
              [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
                 std::size_t shift, const Modulus &modulus) {
@@ -566,7 +570,6 @@ void bind_util_namespace(pybind11::module &m) {
 
     /*******************
      * "util/polyarithmod.h" {
-     ***/
     m.def("negate_poly_coeffmod",
           [](const std::vector<uint64_t> &poly, std::size_t coeff_count,
              const std::vector<uint64_t> &coeff_modulus,
@@ -611,6 +614,7 @@ void bind_util_namespace(pybind11::module &m) {
                                           out.data(), MemoryManager::GetPool());
                  return out;
              });
+     ***/
 
     /***
      * } "util/polyarithmod.h"
@@ -716,6 +720,12 @@ void bind_util_namespace(pybind11::module &m) {
      * } "util/hash.h"
      *******************/
 
+    py::class_<MultiplyUIntModOperand>(m, "MultiplyUIntModOperand", py::module_local())
+        .def(py::init<>())
+        .def_readwrite("operand", &MultiplyUIntModOperand::operand)
+        .def_readwrite("quotient", &MultiplyUIntModOperand::quotient);
+
+
     /*******************
      * "util/pointer.h" {
      ***/
@@ -726,6 +736,7 @@ void bind_util_namespace(pybind11::module &m) {
     bind_pointer<NTTTables>(m, "NTTTables");
     bind_pointer<RNSTool>(m, "RNSTool");
     bind_pointer<RNSBase>(m, "RNSBase");
+    bind_pointer<MultiplyUIntModOperand>(m, "MultiplyUIntModOperand");
 
     /***
      * } "util/pointer.h"
